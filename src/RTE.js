@@ -10,6 +10,9 @@ import {
   UnderlineOutlined,
   HighlightOutlined,
   StrikethroughOutlined,
+  AlignCenterOutlined,
+  AlignLeftOutlined,
+  AlignRightOutlined,
 } from '@ant-design/icons';
 import { Button, Tooltip } from 'antd';
 
@@ -38,6 +41,12 @@ const RTE = () => {
     switch (props.element.type) {
       case 'code':
         return <CodeElement {...props} />;
+        case 'middle_aligned':
+          return <MiddleAligned {...props} />;
+        case 'left_aligned':
+          return <LeftAligned {...props} />;
+        case 'right_aligned':
+          return <RightAligned {...props} />;
       default:
         return <DefaultElement {...props} />;
     }
@@ -97,11 +106,43 @@ const RTE = () => {
           }}
         />
       </Tooltip>
-
-      <Slate
+      <Tooltip title="Middle Align">
+      <Button
+      icon={<AlignCenterOutlined />}
+      onMouseDown={(event) => {
+      event.preventDefault();
+      CustomEditor.toggleMiddleAlignment(editor);
+      }}
+      />
+  
+      </Tooltip>
+      <Tooltip title="Left Align">
+      <Button
+      icon={<AlignLeftOutlined />}
+      onMouseDown={(event) => {
+      event.preventDefault();
+      CustomEditor.toggleLeftAlignment(editor);
+      }}
+      />
+      
+      </Tooltip>
+      <Tooltip title="Right Align">
+      <Button
+      icon={<AlignRightOutlined />}
+      onMouseDown={(event) => {
+      event.preventDefault();
+      CustomEditor.toggleRightAlignment(editor);
+      }}
+      />
+      
+     </Tooltip>
+   <Slate
         editor={editor}
         value={value}
-        onChange={(newValue) => setValue(newValue)}
+        onChange={(newValue) => {
+          setValue(newValue);
+          console.log(newValue);
+        }}
       >
         <Editable
           renderElement={renderElement}
@@ -142,6 +183,18 @@ const CodeElement = (props) => {
     </pre>
   );
 };
+const MiddleAligned = (props) => {
+  return <p style={{ textAlign: 'center' }}>{props.children}</p>;
+};
+
+const LeftAligned = (props) => {
+  return <p style={{ textAlign: 'left' }}>{props.children}</p>;
+};
+
+const RightAligned = (props) => {
+  return <p style={{ textAlign: 'right' }}>{props.children}</p>;
+};
+  
 const DefaultElement = (props) => {
   return <p {...props.attributes}>{props.children}</p>;
 };
@@ -203,6 +256,30 @@ const CustomEditor = {
     return !!match;
   },
 
+  isMiddleAligned(editor) {
+    const [match] = Editor.nodes(editor, {
+      match: (n) => n.type === 'middle_aligned',
+    });
+
+    return !!match;
+  },
+
+  isLeftAligned(editor) {
+    const [match] = Editor.nodes(editor, {
+      match: (n) => n.type === 'left_aligned',
+    });
+
+    return !!match;
+  },
+
+  isRightAligned(editor) {
+    const [match] = Editor.nodes(editor, {
+      match: (n) => n.type === 'right_aligned',
+    });
+
+    return !!match;
+  },
+
   isUnderlineActive(editor) {
     const [match] = Editor.nodes(editor, {
       match: (n) => n.underline === true,
@@ -253,6 +330,33 @@ const CustomEditor = {
     Transforms.setNodes(
       editor,
       { type: isActive ? null : 'code' },
+      { match: (n) => Editor.isBlock(editor, n) }
+    );
+  },
+
+  toggleMiddleAlignment(editor) {
+    const isActive = CustomEditor.isMiddleAligned(editor);
+    Transforms.setNodes(
+      editor,
+      { type: isActive ? null : 'middle_aligned' },
+      { match: (n) => Editor.isBlock(editor, n) }
+    );
+  },
+
+  toggleLeftAlignment(editor) {
+    const isActive = CustomEditor.isLeftAligned(editor);
+    Transforms.setNodes(
+      editor,
+      { type: isActive ? null : 'left_aligned' },
+      { match: (n) => Editor.isBlock(editor, n) }
+    );
+  },
+
+  toggleRightAlignment(editor) {
+    const isActive = CustomEditor.isRightAligned(editor);
+    Transforms.setNodes(
+      editor,
+      { type: isActive ? null : 'right_aligned' },
       { match: (n) => Editor.isBlock(editor, n) }
     );
   },
